@@ -1,0 +1,43 @@
+version: '2'
+services:
+  consentservice:
+    image: kvalitetsit/consent-service:latest
+    environment:
+      - DB_DRIVER=org.mariadb.jdbc.Driver
+      - DB_PASSWORD=consent1234
+      - DB_USERNAME=consent
+      - DB_URL=jdbc:mariadb://mariadb:3306/consent
+      - NOTIFICATION_SERVICE_URL=http://jsontomqservice:8090/notificationservice
+      - UID_KEY=urn:dk:gov:saml:cprNumberIdentification
+      - FLYWAY_PLACEHOLDERS_MUNICIPALITY=561
+    ports:
+      - "8097:80"
+
+  mariadb:
+    image: docker.io/bitnami/mariadb-galera:10.6.7-debian-10-r56
+    environment:
+      - MARIADB_ROOT_PASSWORD=my-secret-pw
+      - MARIADB_DATABASE=consent
+      - MARIADB_USER=consent
+      - MARIADB_PASSWORD=consent1234
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "3306:3306"
+
+  jsontomqservice:
+    image: kvalitetsit/jsontomqservice:a44a6119ce9ce5d40ab2f5b344cfe09bfb8c42db
+    environment:
+      - PORT=8090
+      - MQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - CORRELATION_ID_HEADER_NAME=correlation-id
+      - MAPPING=/notificationservice/sendNotification=iti42.exchange
+    links:
+      - rabbitmq
+
+  rabbitmq:
+    build: rabbitmq
+    image: kihdev/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "15672:15672"
