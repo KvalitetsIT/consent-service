@@ -7,7 +7,7 @@ public class ValidationErrors {
 
 	private String message;
 	
-	private List<String> errors = new ArrayList<String>();
+	private List<String> errors = new ArrayList<>();
 
 	public String getMessage() {
 		return message;
